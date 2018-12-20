@@ -1,0 +1,88 @@
+use FLETNIX
+go
+-- a + b
+select *
+from Movie
+where publication_year  between 1990 and 2010
+
+
+-- c
+select lastname, firstname, subscription_start
+from Customer
+where subscription_end is null
+
+
+-- d
+SELECT Person.person_id ,Role ,Person.firstname, Person.lastname, Person.Gender, Movie.title, Movie.publication_year
+  FROM Movie_Cast Casts
+	INNER JOIN dbo.Person Person
+	ON Casts.person_id = Person.person_id
+	INNER JOIN dbo.Movie Movie
+	ON Casts.movie_id = Movie.movie_id 
+  WHERE Movie.title like  '%Terminator%' and publication_year = 1991
+
+  
+--e
+Select Movie.title, Movie.publication_year
+  FROM Movie_Cast Casts
+	INNER JOIN dbo.Person Person
+	ON Casts.person_id = Person.person_id
+	INNER JOIN dbo.Movie Movie
+	ON Casts.movie_id = Movie.movie_id 
+  WHERE (Person.firstname+Person.lastname) = 'Arnold'+'Schwarzenegger'
+
+  
+--f
+--create view openstaande_kosten as
+select C.lastname, C.firstname, SUM(w.price) as [totaal bedrag]
+from WatchHistory W inner join Customer C on w.costumer_mail_address = c.customer_mail_address
+where w.invoiced = 0 
+group by C.lastname, C.firstname
+
+
+--g
+select top 100	 Movie.title, count(*)
+from			 Movie right outer join WatchHistory
+on				 Movie.movie_id = WatchHistory.movie_id
+group by		 Movie.title
+order by	2
+
+
+
+--h
+select c.firstname, c.lastname, SUM(wh.price)
+from Customer C inner join WatchHistory wh on c.customer_mail_address = wh.costumer_mail_address
+where invoiced = 0 and wh.watch_date < DATEADD(month,-2, getDate())
+group by c.customer_mail_address, c.firstname, c.lastname
+	 
+
+-- i 
+select m.movie_id, m.title
+from Movie m INNER JOIN Movie_Genre mg ON mg.movie_id = m.movie_id
+GROUP BY m.movie_id, m.title
+having count(mg.movie_id) > 7
+
+
+--j
+select	 Person.firstname, Person.lastname
+from	 Movie_genre join Movie_cast
+on		 Movie_genre.movie_id = Movie_cast.movie_id join Person
+on		 Person.person_id = Movie_cast.person_id
+where	 Movie_genre.genre_name = 'Horror' AND Person.person_id in
+(
+
+		select	Person.person_id 
+		from	Movie_genre join Movie_cast
+		on		Movie_genre.movie_id = Movie_cast.movie_id join Person
+		on		Person.person_id = Movie_cast.person_id
+		where	Movie_genre.genre_name = 'Family' AND Person.gender='F'
+
+)
+
+
+--k
+select top (1) p.firstname, p.lastname
+from Person p INNER JOIN Movie_Directors d ON p.person_id = d.person_id
+group by p.firstname, p.lastname
+order by count(d.movie_id) desc
+
